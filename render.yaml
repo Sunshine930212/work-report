@@ -1,0 +1,20 @@
+# Render Blueprint 配置 —— 部署「三人云端工作台」
+# 用法（二选一）：
+#   1) 网页端：Render 控制台 → New → Blueprint → 关联含本文件的仓库 → Deploy
+#   2) 命令行：本目录执行  render login  &&  render deploy
+# Render 会自动读取此文件，按下面的设置拉起服务，并分配一个 https 公网地址。
+services:
+  - type: web
+    name: workbench-webapp
+    runtime: node
+    region: singapore          # 离国内最近，延迟最低；可改 oregon / frankfurt
+    plan: free                 # 免费档；休眠后首次访问约 30~60s 冷启动
+    buildCommand: "npm install"   # 零依赖，install 基本是空跑，几秒完成
+    startCommand: "node server.js"
+    healthCheckPath: "/"          # 根路径返回 200 即视为健康
+    envVars:
+      - key: NODE_ENV
+        value: production
+    # 说明：免费档文件系统为非持久盘，重新部署会清空 data/。
+    # 应对措施：应用内已内置「⬇ 备份(JSON) / ⬆ 导入备份」，重要数据定期导出即可；
+    # 若需永久持久化，可在 Render 面板给本服务挂一个 Disk（付费），或后续接托管数据库。
